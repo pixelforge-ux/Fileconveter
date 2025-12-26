@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مبدل فوق پیشرفته فایل</title>
+    <title>مبدل فایل</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#4f46e5">
     <script>
         !function(e,t,n){e.yektanetAnalyticsObject=n,e[n]=e[n]||function(){e[n].q.push(arguments)},e[n].q=e[n].q||[];var a=t.getElementsByTagName("head")[0],r=new Date,c="https://cdn.yektanet.com/superscript/QbmZ9Sgl/native-pixelforge-ux.github.io-44538/yn_pub.js?v="+r.getFullYear().toString()+"0"+r.getMonth()+"0"+r.getDate()+"0"+r.getHours(),s=t.createElement("link");s.rel="preload",s.as="script",s.href=c,a.appendChild(s);var l=t.createElement("script");l.async=!0,l.src=c,a.appendChild(l)}(window,document,"yektanet");
     </script>
@@ -20,12 +23,11 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
 
-    <link rel="icon" type="image/png" href="favicon.png">
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="flex flex-col items-center animate-bounce-slow">
             <img src="logo.png" alt="Logo" class="w-32 h-32 mb-6 drop-shadow-2xl">
-            <h1 class="text-3xl font-black text-indigo-600 mb-2">مبدل فوق پیشرفته فایل</h1>
+            <h1 class="text-3xl font-black text-indigo-600 mb-2">مبدل فایل</h1>
             <div class="flex items-center gap-2 text-slate-400 mb-8">
                 <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
                 <span class="text-sm font-medium">در حال بارگذاری...</span>
@@ -45,8 +47,8 @@
 
     <!-- Header -->
     <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-indigo-600">مبدل ۱۲۰ فرمته</h1>
-        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">نسخه ۱.۰.۰</div>
+        <h1 class="text-xl font-bold text-indigo-600">مبدل فایل</h1>
+        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">نسخه ۱.۱.۰</div>
     </header>
 
     <main class="flex-grow flex flex-col items-center justify-center p-4">
@@ -66,17 +68,20 @@
 
         <!-- Conversion Interface (Hidden by default) -->
         <div id="converter-ui" class="hidden w-full max-w-2xl mt-8 bg-white rounded-3xl p-6 shadow-xl border border-slate-100 animate-slide-up">
-            <div class="flex items-center gap-4 mb-6">
-                <div id="file-icon" class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-2xl">📄</div>
-                <div class="flex-grow">
-                    <h3 id="file-name" class="font-bold truncate max-w-xs">filename.jpg</h3>
-                    <p id="file-info" class="text-xs text-slate-400">حجم: ۲ مگابایت</p>
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-6 p-4 bg-slate-50 rounded-2xl">
+                <div id="file-preview-container" class="w-24 h-24 bg-white rounded-xl shadow-inner flex items-center justify-center overflow-hidden border border-slate-200">
+                    <div id="file-icon" class="text-4xl">📄</div>
                 </div>
-                <button id="reset-btn" class="text-slate-400 hover:text-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
+                <div class="flex-grow text-center md:text-right">
+                    <h3 id="file-name" class="font-bold truncate max-w-xs text-lg">filename.jpg</h3>
+                    <p id="file-info" class="text-sm text-slate-500 mb-2">حجم: ۲ مگابایت</p>
+                    <button id="reset-btn" class="inline-flex items-center gap-1 text-red-500 hover:text-red-700 text-xs font-bold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        انتخاب فایل دیگر
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -92,6 +97,9 @@
                             </svg>
                         </div>
                     </div>
+                    <p id="format-warning" class="hidden text-[10px] text-amber-600 mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                        ⚠️ این تبدیل آزمایشی است و ممکن است نتیجه دقیق نباشد.
+                    </p>
                 </div>
                 <div class="flex items-end">
                     <button id="convert-btn" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
@@ -242,8 +250,8 @@
     </section>
 
     <footer class="p-8 text-center text-slate-400 text-sm border-t border-slate-100 bg-white">
-        <p class="mb-2"></p>
-        <p class="text-[10px] uppercase tracking-widest opacity-50">© 2025 All Rights Reserved</p>
+        <p class="mb-2">تبدیل سریع و امن فایل‌ها به صورت آنلاین</p>
+        <p class="text-[10px] uppercase tracking-widest opacity-50">© 2024 All Rights Reserved</p>
     </footer>
 
     <script type="module" src="app.js"></script>

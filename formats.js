@@ -39,7 +39,6 @@ export const FORMAT_GROUPS = {
 export function getPossibleTargets(sourceExt) {
     const ext = sourceExt.toLowerCase().replace('.', '');
     
-    // Find which group the source belongs to
     let sourceGroupKey = null;
     for (const [key, group] of Object.entries(FORMAT_GROUPS)) {
         if (group.formats.includes(ext)) {
@@ -48,26 +47,36 @@ export function getPossibleTargets(sourceExt) {
         }
     }
 
-    if (!sourceGroupKey) {
-        // Fallback for unknown formats
-        return ["pdf", "zip", "txt"];
+    const nativeImages = ["png", "jpg", "jpeg", "webp"];
+    const nativeDocs = ["pdf"];
+
+    let recommended = [];
+    let experimental = [];
+
+    if (sourceGroupKey === 'image') {
+        recommended = nativeImages.filter(f => f !== ext);
+        recommended.push('pdf');
+        experimental = FORMAT_GROUPS.image.formats.filter(f => !recommended.includes(f) && f !== ext);
+    } else if (sourceGroupKey === 'document' || sourceGroupKey === 'code') {
+        recommended = ['pdf', 'txt'];
+        experimental = FORMAT_GROUPS[sourceGroupKey].formats.filter(f => !recommended.includes(f) && f !== ext);
+    } else if (sourceGroupKey) {
+        // For audio/video/etc
+        recommended = FORMAT_GROUPS[sourceGroupKey].formats.slice(0, 3).filter(f => f !== ext);
+        experimental = FORMAT_GROUPS[sourceGroupKey].formats.slice(3).filter(f => f !== ext);
+    } else {
+        recommended = ["pdf", "zip"];
     }
 
-    // Logic: 
-    // 1. Suggest everything in the same group
-    // 2. Images can also go to PDF
-    // 3. Documents can also go to PDF/TXT
-    // 4. Everything can be zipped
-    let targets = [...FORMAT_GROUPS[sourceGroupKey].formats];
-    
-    if (sourceGroupKey === 'image' || sourceGroupKey === 'document' || sourceGroupKey === 'code') {
-        if (!targets.includes('pdf')) targets.push('pdf');
+    // Always allow zipping as experimental/fallback
+    if (!recommended.includes('zip') && !experimental.includes('zip')) {
+        experimental.push('zip');
     }
-    
-    if (!targets.includes('zip')) targets.push('zip');
 
-    // Remove current extension
-    return targets.filter(f => f !== ext).sort();
+    return {
+        recommended: [...new Set(recommended)].sort(),
+        experimental: [...new Set(experimental)].sort()
+    };
 }
 
 export function getFormatIcon(ext) {

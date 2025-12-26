@@ -10,9 +10,12 @@ const targetFormatSelect = document.getElementById('target-format');
 const convertBtn = document.getElementById('convert-btn');
 const progressBar = document.getElementById('progress-bar');
 const progressContainer = document.getElementById('progress-container');
+const statusText = document.getElementById('status-text');
 const downloadContainer = document.getElementById('download-container');
 const downloadLink = document.getElementById('download-link');
 const resetBtn = document.getElementById('reset-btn');
+const formatWarning = document.getElementById('format-warning');
+const previewContainer = document.getElementById('file-preview-container');
 
 let currentFile = null;
 
@@ -55,49 +58,72 @@ fileInput.addEventListener('change', (e) => {
     if (e.target.files.length) handleFile(e.target.files[0]);
 });
 
-function handleFile(file) {
+async function handleFile(file) {
     currentFile = file;
     const ext = file.name.split('.').pop().toLowerCase();
     
     fileNameEl.textContent = file.name;
     fileInfoEl.textContent = `حجم: ${(file.size / (1024 * 1024)).toFixed(2)} مگابایت`;
     
-    // Update icon
-    document.getElementById('file-icon').textContent = getFormatIcon(ext);
+    // Update preview
+    generatePreview(file, ext);
     
     // Fill targets with categorization
-    const targets = getPossibleTargets(ext);
+    const { recommended, experimental } = getPossibleTargets(ext);
     
-    // Group targets for the select UI
-    let optionsHtml = '';
-    const categories = {};
+    let optionsHtml = '<option value="" disabled selected>انتخاب فرمت مقصد...</option>';
     
-    targets.forEach(t => {
-        let foundCat = 'سایر';
-        for (const [key, group] of Object.entries(FORMAT_GROUPS)) {
-            if (group.formats.includes(t)) {
-                foundCat = group.label;
-                break;
-            }
-        }
-        if (!categories[foundCat]) categories[foundCat] = [];
-        categories[foundCat].push(t);
-    });
+    if (recommended.length > 0) {
+        optionsHtml += `<optgroup label="پیشنهادی (کیفیت بالا)">`;
+        recommended.forEach(f => {
+            optionsHtml += `<option value="${f}" data-type="native">${f.toUpperCase()}</option>`;
+        });
+        optionsHtml += `</optgroup>`;
+    }
 
-    for (const [cat, formats] of Object.entries(categories)) {
-        optionsHtml += `<optgroup label="${cat}">`;
-        formats.forEach(f => {
-            optionsHtml += `<option value="${f}">${f.toUpperCase()}</option>`;
+    if (experimental.length > 0) {
+        optionsHtml += `<optgroup label="تجربی (آزمایشی)">`;
+        experimental.forEach(f => {
+            optionsHtml += `<option value="${f}" data-type="experimental">${f.toUpperCase()}</option>`;
         });
         optionsHtml += `</optgroup>`;
     }
     
     targetFormatSelect.innerHTML = optionsHtml;
+    formatWarning.classList.add('hidden');
     
     dropZone.classList.add('hidden');
     converterUI.classList.remove('hidden');
     downloadContainer.classList.add('hidden');
     progressContainer.classList.add('hidden');
+}
+
+targetFormatSelect.addEventListener('change', () => {
+    const selectedOption = targetFormatSelect.options[targetFormatSelect.selectedIndex];
+    if (selectedOption.dataset.type === 'experimental') {
+        formatWarning.classList.remove('hidden');
+    } else {
+        formatWarning.classList.add('hidden');
+    }
+});
+
+async function generatePreview(file, ext) {
+    previewContainer.innerHTML = '';
+    const iconEl = document.createElement('div');
+    iconEl.className = 'text-4xl';
+    iconEl.textContent = getFormatIcon(ext);
+    previewContainer.appendChild(iconEl);
+
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext)) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewContainer.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+        };
+        reader.readAsDataURL(file);
+    } else if (['txt', 'js', 'css', 'json', 'md', 'html'].includes(ext)) {
+        const text = await file.text();
+        previewContainer.innerHTML = `<div class="text-[8px] p-2 leading-tight overflow-hidden text-slate-400 select-none">${text.substring(0, 300)}...</div>`;
+    }
 }
 
 resetBtn.addEventListener('click', () => {
@@ -112,8 +138,16 @@ convertBtn.addEventListener('click', async () => {
     if (!currentFile) return;
     
     const targetFormat = targetFormatSelect.value;
+    if (!targetFormat) {
+        alert('لطفا فرمت مقصد را انتخاب کنید');
+        return;
+    }
+    
     progressContainer.classList.remove('hidden');
+    statusText.innerHTML = '<span class="animate-pulse">در حال پردازش و تبدیل...</span>';
+    statusText.className = "text-xs text-center text-slate-500 italic";
     progressBar.style.width = '0%';
+    progressBar.className = "h-full bg-indigo-600 transition-all duration-300";
     convertBtn.disabled = true;
     convertBtn.classList.add('opacity-50');
 
@@ -124,10 +158,10 @@ convertBtn.addEventListener('click', async () => {
         // Simulate progress for UI feel
         let p = 0;
         const interval = setInterval(() => {
-            p += 10;
+            p += Math.random() * 15;
+            if (p > 95) p = 95;
             progressBar.style.width = `${p}%`;
-            if (p >= 90) clearInterval(interval);
-        }, 100);
+        }, 150);
 
         // Actual Logic
         if (targetFormat === 'pdf' && ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'avif'].includes(sourceExt)) {
@@ -149,10 +183,12 @@ convertBtn.addEventListener('click', async () => {
 
         clearInterval(interval);
         progressBar.style.width = '100%';
+        progressBar.className = "h-full bg-emerald-500 transition-all duration-300";
+        statusText.innerHTML = '<span class="text-emerald-600 font-bold flex items-center justify-center gap-1">✨ تبدیل با موفقیت انجام شد ✨</span>';
         
         const url = URL.createObjectURL(resultBlob);
         downloadLink.href = url;
-        downloadLink.download = `converted-${Date.now()}.${targetFormat}`;
+        downloadLink.download = `converted-${currentFile.name.split('.')[0]}.${targetFormat}`;
         downloadContainer.classList.remove('hidden');
         
     } catch (err) {
