@@ -82,7 +82,7 @@ async function handleFile(file) {
     }
 
     if (experimental.length > 0) {
-        optionsHtml += `<optgroup label="تجربی (آزمایشی)">`;
+        optionsHtml += `<optgroup label=" (آزمایشی)">`;
         experimental.forEach(f => {
             optionsHtml += `<option value="${f}" data-type="experimental">${f.toUpperCase()}</option>`;
         });
